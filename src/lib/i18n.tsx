@@ -126,6 +126,9 @@ const dict = {
     "exam.deleted": "Удалить экзамен и все его попытки?",
     "exam.noneTeacher": "Экзаменов пока нет — создайте первый.",
     "exam.noneStudent": "Экзаменов в курсе нет",
+    "exam.status.completed": "Завершён",
+    "exam.status.terminated": "Прерван",
+    "exam.status.inProgress": "В процессе",
     "results.title": "Результаты",
     "results.student": "Ученик",
     "results.score": "Балл",
@@ -151,11 +154,8 @@ const dict = {
     "error.question_multiple_answer_required": "Для вопроса с несколькими ответами отметьте хотя бы один правильный вариант",
     "error.presentation.file_required": "Загрузите файл презентации",
     "error.presentation.pages_required": "Загрузите хотя бы одну PNG-страницу",
-    "exam.status.completed": "Завершён",
-"exam.status.terminated": "Прерван",
-"exam.status.inProgress": "В процессе",
-"nav.profile": "Профиль",
   },
+
   en: {
     "app.name": "Synak",
     "app.tagline": "Modern platform for online learning and secure exams",
@@ -279,6 +279,9 @@ const dict = {
     "exam.deleted": "Delete exam and all attempts?",
     "exam.noneTeacher": "No exams yet — create the first one.",
     "exam.noneStudent": "No exams in this course",
+    "exam.status.completed": "Completed",
+    "exam.status.terminated": "Terminated",
+    "exam.status.inProgress": "In progress",
     "results.title": "Results",
     "results.student": "Student",
     "results.score": "Score",
@@ -289,7 +292,6 @@ const dict = {
     "results.status.in_progress": "In progress",
     "common.loading": "Loading...",
     "common.back": "Back",
-    "nav.profile": "Profile",
     "common.theme": "Theme",
     "common.lang": "Language",
     "common.delete": "Delete",
@@ -305,10 +307,8 @@ const dict = {
     "error.question_multiple_answer_required": "Mark at least one correct option for multiple-answer questions",
     "error.presentation.file_required": "Upload a presentation file",
     "error.presentation.pages_required": "Upload at least one PNG page",
-    "exam.status.completed": "Completed",
-"exam.status.terminated": "Terminated",
-"exam.status.inProgress": "In progress",
   },
+
   kg: {
     "app.name": "Сынак",
     "app.tagline": "Онлайн окутуу жана коопсуз сынактар үчүн заманбап платформа",
@@ -389,7 +389,6 @@ const dict = {
     "course.presentation.upload": "Файл жүктөө",
     "course.presentation.upload.more": "Барак кошуу",
     "course.presentation.preview": "Алдын ала көрүү",
-    "nav.profile": "Профиль",
     "course.presentation.pages": "Барактар",
     "course.presentation.noPreview": "Алдын ала көрүү жок",
     "course.exercise.start": "Көнүгүүнү ачуу",
@@ -433,6 +432,9 @@ const dict = {
     "exam.deleted": "Сынак жана бардык аракеттер өчүрүлсүнбү?",
     "exam.noneTeacher": "Азырынча сынак жок — биринчисин түзүңүз.",
     "exam.noneStudent": "Бул курста сынак жок",
+    "exam.status.completed": "Аяктады",
+    "exam.status.terminated": "Токтотулду",
+    "exam.status.inProgress": "Жүрүп жатат",
     "results.title": "Жыйынтыктар",
     "results.student": "Окуучу",
     "results.score": "Балл",
@@ -458,27 +460,51 @@ const dict = {
     "error.question_multiple_answer_required": "Бир нече жооптуу суроолор үчүн кеминде бир туура жоопту белгилеңиз",
     "error.presentation.file_required": "Презентация файлын жүктөңүз",
     "error.presentation.pages_required": "Кеминде бир PNG баракты жүктөңүз",
-    "exam.status.completed": "Аяктады",
-"exam.status.terminated": "Токтотулду",
-"exam.status.inProgress": "Жүрүп жатат",
   },
 } as const;
 
 type Key = keyof typeof dict.ru;
 
-const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: (k: Key) => string }>({
-  lang: "ru", setLang: () => {}, t: (k) => k,
+const Ctx = createContext<{
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  t: (k: Key) => string;
+}>({
+  lang: "ru",
+  setLang: () => {},
+  t: (k) => k,
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ru");
+
   useEffect(() => {
-    const saved = (typeof localStorage !== "undefined" && localStorage.getItem("lang")) as Lang | null;
-    if (saved && ["ru", "en", "kg"].includes(saved)) setLangState(saved);
+    const saved = (typeof localStorage !== "undefined" &&
+      localStorage.getItem("lang")) as Lang | null;
+
+    if (saved && ["ru", "en", "kg"].includes(saved)) {
+      setLangState(saved);
+    }
   }, []);
-  const setLang = (l: Lang) => { setLangState(l); try { localStorage.setItem("lang", l); } catch {} };
-  const t = (k: Key) => (dict[lang] as Record<string, string>)[k] ?? (dict.ru as Record<string, string>)[k] ?? k;
-  return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
+
+  const setLang = (l: Lang) => {
+    setLangState(l);
+
+    try {
+      localStorage.setItem("lang", l);
+    } catch {}
+  };
+
+  const t = (k: Key) =>
+    (dict[lang] as Record<string, string>)[k] ??
+    (dict.ru as Record<string, string>)[k] ??
+    k;
+
+  return (
+    <Ctx.Provider value={{ lang, setLang, t }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export const useI18n = () => useContext(Ctx);
